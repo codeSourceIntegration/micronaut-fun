@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME *****
+
+- This pom.xml file has been configured to include all known mechanisms for configuring a Micronaut mainClass.
+- There are currently 5 known common mechanisms.
+- Identify the mechanisms below by locating comments with "Micronaut mainClass Mechanism X"
+- Each mechanism should identify a different mainclass value, and an associated class file should exist.
+
+***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME *****
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>micronaut.documentation.search</groupId>
+    <artifactId>micronaut-documentation-search</artifactId>
+    <version>0.1</version>
+    <packaging>jar</packaging>
+
+    <name>micronaut-documentation-search</name>
+
+    <properties>
+
+        <!-- Micronaut mainClass Mechanism 1: canonical Micronaut main via exec.mainClass property -->
+
+        <exec.mainClass>fun.micronaut.Maven1</exec.mainClass>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <micronaut.version>4.6.1</micronaut.version>
+        <java.version>25</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.micronaut</groupId>
+                <artifactId>micronaut-bom</artifactId>
+                <version>${micronaut.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.micronaut.opensearch</groupId>
+            <artifactId>micronaut-opensearch-httpclient5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.serde</groupId>
+            <artifactId>micronaut-serde-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.views</groupId>
+            <artifactId>micronaut-views-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.opensearch</groupId>
+            <artifactId>micronaut-opensearch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-http-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-management</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-html2md-converter</artifactId>
+            <version>0.64.8</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.mcp</groupId>
+            <artifactId>micronaut-mcp-server-java-sdk</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.mcp</groupId>
+            <artifactId>micronaut-mcp-client-java-sdk</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.jsonschema</groupId>
+            <artifactId>micronaut-json-schema-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.cache</groupId>
+            <artifactId>micronaut-cache-caffeine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-http-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <!-- Micronaut mainClass Mechanism 2: Micronaut Maven Plugin mainClass override. This controls what mn:run uses as its main class. -->
+
+            <plugin>
+                <groupId>io.micronaut.maven</groupId>
+                <artifactId>micronaut-maven-plugin</artifactId>
+                <version>${micronaut.version}</version>
+                <configuration>
+                    <runtime>netty</runtime>
+                    <testRuntime>junit5</testRuntime>
+                    <processing>
+                        <incremental>true</incremental>
+                        <annotations>
+                            <annotation>micronaut.documentation.search.*</annotation>
+                        </annotations>
+                    </processing>
+                    <mainClass>fun.micronaut.Maven2</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Micronaut mainClass Mechanism 3: Exec Maven Plugin mainClass. This lets you run a main via exec:java. -->
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>run-main-exec-plugin</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>fun.micronaut.Maven3</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Micronaut mainClass Mechanism 4: Maven Shade Plugin manifest mainClass. This sets the Main-Class of a shaded JAR to a main. -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>shade-main-shade</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.artifactId}-shade</finalName>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>fun.micronaut.Maven4</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Micronaut mainClass Mechanism 5: GraalVM native-maven-plugin mainClass. This sets the entry point for a native image build to a *fifth* main. -->
+
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>build-main-native</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>fun.micronaut.Maven5</mainClass>
+                            <imageName>${project.artifactId}-native</imageName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+
+                    <compilerArgs>
+                        <arg>-Amicronaut.jsonschema.baseUri=https://micronaut.fun/schemas</arg>
+                    </compilerArgs>
+
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>io.micronaut</groupId>
+                            <artifactId>micronaut-http-validation</artifactId>
+                        </path>
+                        <path>
+                            <groupId>io.micronaut.serde</groupId>
+                            <artifactId>micronaut-serde-processor</artifactId>
+                        </path>
+                        <path>
+                            <groupId>io.micronaut.jsonschema</groupId>
+                            <artifactId>micronaut-json-schema-processor</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+    </repositories>
+
+</project>

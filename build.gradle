@@ -1,0 +1,147 @@
+import io.micronaut.gradle.docker.MicronautDockerfile
+import io.micronaut.gradle.docker.NativeImageDockerfile
+import org.gradle.api.tasks.compile.JavaCompile
+
+/**
+***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME *****
+
+- This build.gradle file has been configured to include all known mechanisms for configuring a Micronaut mainClass.
+- There are currently 5 known common mechanisms.
+- Identify the mechanisms below by locating comments with "Micronaut mainClass Mechanism X"
+- Each mechanism should identify a different mainclass value, and an associated class file should exist.
+
+***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME *****
+*/
+
+plugins {
+    id "io.micronaut.application" version "4.6.1"
+    id "com.gradleup.shadow" version "9.2.2"
+}
+
+version = "0.1"
+group = "micronaut.documentation.search"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor "io.micronaut:micronaut-http-validation"
+    implementation "io.micronaut.opensearch:micronaut-opensearch-httpclient5"
+
+    annotationProcessor "io.micronaut.serde:micronaut-serde-processor"
+    implementation "io.micronaut.serde:micronaut-serde-jackson"
+
+    implementation "io.micronaut.views:micronaut-views-thymeleaf"
+    implementation "io.micronaut.opensearch:micronaut-opensearch"
+    implementation "org.apache.httpcomponents.client5:httpclient5"
+    implementation "org.jsoup:jsoup:1.17.2"
+    implementation "io.micronaut:micronaut-http-client"
+    implementation "io.micronaut:micronaut-management"
+    // HTML -> Markdown converter
+    implementation "com.vladsch.flexmark:flexmark-html2md-converter:0.64.8"
+    implementation "io.micronaut.mcp:micronaut-mcp-server-java-sdk"
+    testImplementation "io.micronaut.mcp:micronaut-mcp-client-java-sdk"
+    annotationProcessor "io.micronaut.jsonschema:micronaut-json-schema-processor"
+    implementation "io.micronaut.jsonschema:micronaut-json-schema-annotations"
+    implementation "io.micronaut.cache:micronaut-cache-caffeine"
+    compileOnly "io.micronaut:micronaut-http-client"
+    runtimeOnly "ch.qos.logback:logback-classic"
+    testImplementation "io.micronaut:micronaut-http-client"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += "-Amicronaut.jsonschema.baseUri=https://micronaut.fun/schemas"
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("25")
+    targetCompatibility = JavaVersion.toVersion("25")
+}
+
+graalvmNative.toolchainDetection = false
+
+micronaut {
+    runtime "netty"
+    testRuntime "junit5"
+    processing {
+        incremental true
+        annotations "micronaut.documentation.search.*"
+    }
+}
+
+/**
+ * Micronaut mainClass Mechanism 1 - Application plugin mainClass  (modern, preferred)
+ *
+ * Used by:
+ *   - ./gradlew run
+ *   - Micronaut Docker / layered JAR / most tooling
+ */
+application {
+    mainClass = "fun.micronaut.GradleGroovy1" // MAIN #1
+}
+
+/**
+ * Micronaut mainClass Mechanism 2 - Legacy project-level mainClassName  (Gradle <= 7)
+ *
+ * Historically used by the Application plugin and shown in older Micronaut docs.
+ * In Gradle 8+ this property no longer exists.
+ *
+ * NOTE: In a real build you would NOT set this differently from application.mainClass.
+ */
+mainClassName = "fun.micronaut.GradleGroovy2" // MAIN #2 (legacy)
+
+/**
+ * Micronaut mainClass Mechanism 3 - JAR manifest Main-Class
+ *
+ * Used when you run:
+ *   java -jar build/libs/yourapp.jar
+ *
+ * If you build a shadow/fat JAR, you'd typically mirror this in shadowJar.manifest.
+ */
+jar {
+    manifest {
+        attributes(
+                "Main-Class": "fun.micronaut.GradleGroovy3" // MAIN #3 (JAR entrypoint)
+        )
+    }
+}
+
+/**
+ * Micronaut mainClass Mechanism 4 - GraalVM native-image mainClass
+ *
+ * Micronaut's application plugin applies the GraalVM Native Build Tools plugin
+ * and uses these settings for nativeCompile/nativeRun. You can override the
+ * default by specifying a mainClass here.
+ */
+graalvmNative {
+    binaries {
+        named("main") {
+            imageName = "micronaut-native-example"
+            mainClass = "fun.micronaut.GradleGroovy4" // MAIN #4 (native entrypoint)
+        }
+    }
+}
+
+/**
+ * Micronaut mainClass Mechanism 5 - Custom JavaExec task with its own mainClass
+ *
+ * This gives you an additional entrypoint, e.g. a Micronaut-based CLI.
+ * Run with:
+ *   ./gradlew runCli
+ */
+tasks.register('runCli', JavaExec) {
+    group = "application"
+    description = "Runs an alternate Micronaut CLI entrypoint"
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = "fun.micronaut.GradleGroovy5" // MAIN #5 (custom JavaExec entrypoint)
+    jvmArgs '-Xms256m', '-Xmx512m'
+}
+
+tasks.named("dockerfile", MicronautDockerfile) {
+    baseImage.set("eclipse-temurin:25-jre")
+}
+
+tasks.named("dockerfileNative", NativeImageDockerfile) {
+    jdkVersion = "21"
+}

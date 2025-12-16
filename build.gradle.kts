@@ -1,5 +1,14 @@
 import io.micronaut.gradle.docker.MicronautDockerfile
 
+//***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME *****
+//
+//- This build.gradle.kts file has been configured to include all known mechanisms for configuring a Micronaut mainClass.
+//- There are currently 5 known common mechanisms.
+//- Identify the mechanisms below by locating comments with "Micronaut mainClass Mechanism X"
+//- Each mechanism should identify a different mainclass value, and an associated class file should exist.
+//
+//***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME ***** READ ME *****
+
 plugins {
     id("io.micronaut.application") version "4.6.1"
     id("com.gradleup.shadow") version "9.2.2"
@@ -39,9 +48,6 @@ dependencies {
 tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
     options.compilerArgs.add("-Amicronaut.jsonschema.baseUri=https://micronaut.fun/schemas")
 }
-application {
-    mainClass = "fun.micronaut.Application"
-}
 java {
     sourceCompatibility = JavaVersion.toVersion("25")
     targetCompatibility = JavaVersion.toVersion("25")
@@ -58,6 +64,51 @@ micronaut {
         annotations("micronaut.documentation.search.*")
     }
 }
+
+// ----------------------------------------------------------------------
+// Micronaut mainClass Mechanism 1: Application plugin - modern property `mainClass`
+// ----------------------------------------------------------------------
+// This is the “new” API Gradle documents for the Application plugin.
+application {
+    mainClass.set("fun.micronaut.GradleKotlin1")
+
+    // ------------------------------------------------------------------
+    // Micronaut mainClass Mechanism 2: Application plugin - legacy alias `mainClassName`
+    // ------------------------------------------------------------------
+    @Suppress("DEPRECATION")
+    mainClassName = "fun.micronaut.GradleKotlin2"
+}
+
+// ----------------------------------------------------------------------
+// Micronaut mainClass Mechanism 3: Override the `run` task's main class (JavaExec)
+// ----------------------------------------------------------------------
+// This affects only `./gradlew run` (not the JARs).
+tasks.named<JavaExec>("run") {
+    mainClass.set("fun.micronaut.GradleKotlin3")
+}
+
+// ----------------------------------------------------------------------
+// Micronaut mainClass Mechanism 4: Standard JAR manifest `Main-Class`
+// ----------------------------------------------------------------------
+// This affects `java -jar build/libs/<name>.jar` (the *plain* jar).
+tasks.named<Jar>("jar") {
+    manifest {
+        attributes["Main-Class"] = "fun.micronaut.GradleKotlin4"
+    }
+}
+
+// ----------------------------------------------------------------------
+// Micronaut mainClass Mechanism 5: Shadow JAR manifest `Main-Class`
+// ----------------------------------------------------------------------
+// This affects `java -jar build/libs/<name>-all.jar` (the fat JAR).
+tasks.named<ShadowJar>("shadowJar") {
+    archiveClassifier.set("all")
+
+    manifest {
+        attributes["Main-Class"] = "fun.micronaut.GradleKotlin5"
+    }
+}
+
 tasks.named<MicronautDockerfile>("dockerfile") {
     baseImage.set("eclipse-temurin:25-jre")
 }

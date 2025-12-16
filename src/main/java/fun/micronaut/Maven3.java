@@ -7,7 +7,7 @@ import io.micronaut.context.env.Environment;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.runtime.Micronaut;
 
-public class Application {
+public class Maven3 {
     @ContextConfigurer
     public static class DefaultEnvironmentConfigurer implements ApplicationContextConfigurer {
         @Override
@@ -17,6 +17,6 @@ public class Application {
     }
 
     public static void main(String[] args) {
-        Micronaut.run(Application.class, args);
+        Micronaut.run(Maven3.class, args);
     }
 }
